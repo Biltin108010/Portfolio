@@ -1,3 +1,5 @@
+let allCourses = []; // Store courses globally
+
 document.addEventListener("DOMContentLoaded", function () {
     fetch("courses.json")
         .then(response => {
@@ -7,17 +9,36 @@ document.addEventListener("DOMContentLoaded", function () {
             return response.json();
         })
         .then(data => {
-            displayCourses(data.courses);
+            allCourses = data.courses;
+            displayCourses(allCourses);
         })
         .catch(error => {
             console.error("Error fetching JSON:", error);
             document.getElementById("courses").innerHTML = "<p>Failed to load courses.</p>";
         });
+
+const searchBar = document.getElementById("search-bar");
+    searchBar.addEventListener("input", function () {
+        const searchTerm = searchBar.value.toLowerCase();
+        const filteredCourses = allCourses.map(course => {
+            const filteredSubjects = course.subjects.filter(subject =>
+                subject.toLowerCase().includes(searchTerm)
+            );
+            return { ...course, subjects: filteredSubjects };
+        }).filter(course => course.subjects.length > 0);
+
+        displayCourses(filteredCourses);
+    });
 });
 
 function displayCourses(courses) {
     const coursesContainer = document.getElementById("course-list");
-    coursesContainer.innerHTML = ""; // Clear the loading text
+    coursesContainer.innerHTML = "";
+
+    if (courses.length === 0) {
+        coursesContainer.innerHTML = "<p>No subjects found.</p>";
+        return;
+    }
 
     let content = "";
 
@@ -32,4 +53,3 @@ function displayCourses(courses) {
 
     coursesContainer.innerHTML = content;
 }
-
